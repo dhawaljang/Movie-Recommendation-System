@@ -1,0 +1,55 @@
+import pandas as pd
+
+movies = pd.read_csv('dataset.csv')
+
+movies.describe()
+
+movies.info()
+
+# checking if any Null value
+movies.isnull().sum()
+
+# Feature extracting
+movies = movies[['id','title','genre','overview']]
+
+# creating a new colum tags
+movies['tags'] =  movies['overview']+movies['genre']
+
+# dropping the columns that we do not need
+new_data = movies.drop(columns=['overview','genre'])
+
+# convert text to vector
+from sklearn.feature_extraction.text import CountVectorizer
+cv = CountVectorizer(max_features=10000, stop_words='english')
+
+vector = cv.fit_transform(new_data['tags'].values.astype('U')).toarray()
+
+# recommendation system using cosine similarity
+from sklearn.metrics.pairwise import cosine_similarity
+
+similarity = cosine_similarity(vector)
+
+
+distance = sorted(list(enumerate(similarity[2])), reverse=True, key= lambda vector:vector[1])
+for i in distance[:5] :
+    print(new_data.iloc[i[0]].title)
+
+import pickle
+
+pickle.dump(new_data, open('movies_list.pkl', 'wb'))
+
+pickle.dump(similarity, open('similarity.pkl','wb'))
+
+# load the pickle file
+#pickle.load(open('movies_list.pkl','rb'))
+
+
+
+
+
+
+
+
+
+
+
